@@ -12,11 +12,11 @@ Future<void> main() async {
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
       options: FirebaseOptions(
-        apiKey: "AIzaSyBLVBYH8fo4p1dHEh8vKQLAwR6yhOfdbVQ", // Replace with your API key
-        appId: "1:336251933971:android:29200f86587e254fbeb6e6", // Replace with your App ID
-        messagingSenderId: "336251933971", // Replace with your Messaging Sender ID
-        projectId: "fir-otp-7b20c", // Replace with your Project ID
-        storageBucket: "fir-otp-7b20c.firebasestorage.app", // Optional: Replace with your Storage Bucket
+        apiKey: "AIzaSyBQ0lCVjyvoTKqRPcrHKp0PSBWmvi_wH9A", // Replace with your API key
+        appId: "1:1069098534914:android:ed4176e9a7cd6200047f1b", // Replace with your App ID
+        messagingSenderId: "1069098534914", // Replace with your Messaging Sender ID
+        projectId: "fir-iv-d45ad", // Replace with your Project ID
+        storageBucket: "fir-iv-d45ad.firebasestorage.app", // Optional: Replace with your Storage Bucket
       ),
     );
   } else {
@@ -24,10 +24,11 @@ Future<void> main() async {
   }
 
   // Optional: Initialize Firebase Auth Emulator
-  await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  //await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
 
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);

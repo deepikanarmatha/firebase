@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -9,89 +8,104 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  List movies = [];  // To store fetched movies
+  List movies = [];
+  double selectedRating = 0.0;
 
-  // Fetch movie data from the API
   Future<void> fetchMovies() async {
     final response = await http.get(Uri.parse('https://dummyapi.online/api/movies'));
 
     if (response.statusCode == 200) {
-      List movieData = json.decode(response.body);  // Decode the response into a list
+      List movieData = json.decode(response.body);
       setState(() {
-        movies = movieData;  // Store the fetched movies in the list
+        movies = movieData;
       });
-      Fluttertoast.showToast(
-        msg: "Movies fetched successfully!",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
     } else {
       throw Exception('Failed to load movies');
     }
   }
 
-
-
   @override
   void initState() {
     super.initState();
-    fetchMovies();  // Fetch movies when the widget is initialized
+    fetchMovies();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Filter movies based on the selected rating
+    final filteredMovies = movies.where((movie) {
+      return movie['rating'] >= selectedRating;
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard',  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+        title: Text('Dashboard'),
       ),
-      body: Padding(
-        padding:  EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Text(
-              'Movies List',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Filter by Rating',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
-            // Display loading indicator or list of movies
-            movies.isEmpty
-                ? Center(child: CircularProgressIndicator())  // Show loading if movies are empty
-                : Expanded(
-              child: ListView.builder(
-                itemCount: movies.length,  // Count the number of movies in the list
-                itemBuilder: (context, index) {
-                  final movie = movies[index];
-                  return Card(
-                    elevation: 4.0,
-                    child: ListTile(
-                      leading: Image.asset(
-                        movie['image'],  // Display movie image (locally or from URL)
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                      title: Text(movie['movie']),  // Display movie name
-                      subtitle: Text('Rating: ${movie['rating']}'),  // Display movie rating
-                      onTap: () {
-                        // Navigate to IMDb URL
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MovieDetailScreen(imdbUrl: movie['imdb_url']),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
+          ),
+          Slider(
+            value: selectedRating,
+            min: 0.0,
+            max: 10.0,
+            divisions: 10,
+            label: selectedRating.toString(),
+            onChanged: (value) {
+              setState(() {
+                selectedRating = value;
+              });
+            },
+          ),
+          Expanded(
+            child: filteredMovies.isEmpty
+                ? Center(
+              child: Text(
+                'No movies found for the selected rating',
+                style: TextStyle(fontSize: 16),
               ),
+            )
+                : ListView.builder(
+              itemCount: filteredMovies.length,
+              itemBuilder: (context, index) {
+                final movie = filteredMovies[index];
+                return Card(
+                  elevation: 4.0,
+                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: ListTile(
+                    leading: movie['image'] != null && movie['image'].isNotEmpty
+                        ? Image.network(
+                      movie['image'],
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.image, size: 50, color: Colors.grey);
+                      },
+                    )
+                        : Icon(Icons.image, size: 50, color: Colors.grey),
+                    title: Text(movie['movie']),
+                    subtitle: Text('Rating: ${movie['rating']}'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              MovieDetailScreen(imdbUrl: movie['imdb_url']),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -109,31 +123,12 @@ class MovieDetailScreen extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () {
-            // Open IMDb link
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => WebViewScreen(url: imdbUrl)),
-            );
+            // Navigate to IMDb link or use a webview
           },
           child: Text('Go to IMDb'),
         ),
       ),
-    );
-  }
-}
 
-class WebViewScreen extends StatelessWidget {
-  final String url;
-
-  WebViewScreen({required this.url});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('IMDb')),
-      body: Center(
-        child: Text('Opening IMDb at: $url'),
-      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -26,7 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
           verificationCompleted: (PhoneAuthCredential credential) async {
             // Automatically signs in on Android devices if OTP is detected
             await FirebaseAuth.instance.signInWithCredential(credential);
-
             Fluttertoast.showToast(msg: 'Login Successful');
             _navigateToDashboard();
           },
